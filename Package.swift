@@ -6,47 +6,89 @@ import CompilerPluginSupport
 
 let package = Package(
     name: "swift-dependencies-extras",
-    platforms: [.macOS(.v10_15), .iOS(.v13), .tvOS(.v13), .watchOS(.v6), .macCatalyst(.v13)],
+    platforms: [
+        .iOS(.v13),
+        .macOS(.v10_15),
+        .tvOS(.v13),
+        .watchOS(.v6)
+    ],
     products: [
-        // Products define the executables and libraries a package produces, making them visible to other packages.
         .library(
-            name: "swift-dependencies-extras",
-            targets: ["swift-dependencies-extras"]
-        ),
-        .executable(
-            name: "swift-dependencies-extrasClient",
-            targets: ["swift-dependencies-extrasClient"]
+            name: "DependenciesExtrasMacros",
+            targets: ["DependenciesExtrasMacros"]
         ),
     ],
     dependencies: [
-        // Depend on the Swift 5.9 release of SwiftSyntax
-        .package(url: "https://github.com/apple/swift-syntax.git", from: "509.0.0"),
+        .package(
+            url: "https://github.com/apple/swift-syntax.git",
+            from: "509.0.0"
+        ),
+        .package(
+            url: "https://github.com/pointfreeco/swift-macro-testing",
+            from: "0.2.0"
+        ),
+        .package(
+            url: "https://github.com/pointfreeco/xctest-dynamic-overlay",
+            from: "1.0.0"
+        ),
+        .package(
+            url: "https://github.com/google/swift-benchmark",
+            from: "0.1.0"
+        )
     ],
     targets: [
-        // Targets are the basic building blocks of a package, defining a module or a test suite.
-        // Targets can depend on other targets in this package and products from dependencies.
-        // Macro implementation that performs the source transformation of a macro.
+        .executableTarget(
+            name: "DependenciesExtrasBenchmark",
+            dependencies: [
+                "DependenciesExtrasMacros",
+                .product(
+                    name: "Benchmark",
+                    package: "swift-benchmark"
+                )
+            ]
+        ),
+        .target(
+            name: "DependenciesExtrasMacros",
+            dependencies: [
+                "DependenciesExtrasMacrosPlugin",
+                .product(
+                    name: "XCTestDynamicOverlay",
+                    package: "xctest-dynamic-overlay"
+                )
+            ]
+        ),
         .macro(
-            name: "swift-dependencies-extrasMacros",
+            name: "DependenciesExtrasMacrosPlugin",
             dependencies: [
-                .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
-                .product(name: "SwiftCompilerPlugin", package: "swift-syntax")
+                .product(
+                    name: "SwiftSyntaxMacros",
+                    package: "swift-syntax"
+                ),
+                .product(
+                    name: "SwiftCompilerPlugin",
+                    package: "swift-syntax"
+                )
             ]
         ),
-
-        // Library that exposes a macro as part of its API, which is used in client programs.
-        .target(name: "swift-dependencies-extras", dependencies: ["swift-dependencies-extrasMacros"]),
-
-        // A client of the library, which is able to use the macro in its own code.
-        .executableTarget(name: "swift-dependencies-extrasClient", dependencies: ["swift-dependencies-extras"]),
-
-        // A test target used to develop the macro implementation.
         .testTarget(
-            name: "swift-dependencies-extrasTests",
+            name: "DependenciesExtrasMacrosPluginTests",
             dependencies: [
-                "swift-dependencies-extrasMacros",
-                .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax"),
+                "DependenciesExtrasMacrosPlugin",
+                .product(
+                    name: "MacroTesting",
+                    package: "swift-macro-testing"
+                )
             ]
-        ),
+        )
     ]
 )
+
+#if !os(Windows)
+// Add the documentation compiler plugin if possible
+package.dependencies.append(
+    .package(
+        url: "https://github.com/apple/swift-docc-plugin",
+        from: "1.0.0"
+    )
+)
+#endif

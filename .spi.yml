@@ -1,0 +1,6 @@
+version: 1
+builder:
+  configs:
+    - documentation_targets:
+        - DependenciesExtrasMacros
+      swift_version: 5.9
