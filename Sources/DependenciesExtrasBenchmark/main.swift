@@ -1,8 +1,31 @@
-import swift_dependencies_extras
-
-let a = 17
-let b = 25
-
-let (result, code) = #stringify(a + b)
-
-print("The value \(result) was produced by the code \"\(code)\"")
+//import DependenciesExtrasMacros
+//
+//@DependencyProtocolClient
+//public protocol GreatDesignedInteractor {
+//    func hoge()
+//}
+//
+//
+//extension DependencyValues {
+//    #DependencyValueRegister(of: GreatDesignedInteractor.self, into: "greatDesignedInteractor")
+//}
+//
+//
+//struct S {
+//    @Dependency(\.greatDesignedInteractor) var greatDesignedInteractor
+//    
+//    func hoge() {
+//        let value = greatDesignedInteractor.todo(id: 100)
+//        print(value)
+//    }
+//}
+//
+//let s = withDependencies {
+//    $0.context = .live
+//} operation: {
+//    S()
+//}
+//
+//s.hoge()
+//
+//

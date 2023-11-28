@@ -20,6 +20,10 @@ let package = Package(
     ],
     dependencies: [
         .package(
+            url: "https://github.com/pointfreeco/swift-dependencies",
+            from: "1.1.0"
+        ),
+        .package(
             url: "https://github.com/apple/swift-syntax.git",
             from: "509.0.0"
         ),
@@ -51,6 +55,14 @@ let package = Package(
             name: "DependenciesExtrasMacros",
             dependencies: [
                 "DependenciesExtrasMacrosPlugin",
+                .product(
+                    name: "Dependencies",
+                    package: "swift-dependencies"
+                ),
+                .product(
+                    name: "DependenciesMacros",
+                    package: "swift-dependencies"
+                ),
                 .product(
                     name: "XCTestDynamicOverlay",
                     package: "xctest-dynamic-overlay"

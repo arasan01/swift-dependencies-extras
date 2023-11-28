@@ -1,0 +1,24 @@
+{
+  "configurations": [
+    {
+      "type": "lldb",
+      "request": "launch",
+      "sourceLanguages": ["swift"],
+      "args": [],
+      "cwd": "${workspaceFolder:swift-dependencies-extras}",
+      "name": "Debug DependenciesExtrasBenchmark",
+      "program": "${workspaceFolder:swift-dependencies-extras}/.build/debug/DependenciesExtrasBenchmark",
+      "preLaunchTask": "swift: Build Debug DependenciesExtrasBenchmark"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "sourceLanguages": ["swift"],
+      "args": [],
+      "cwd": "${workspaceFolder:swift-dependencies-extras}",
+      "name": "Release DependenciesExtrasBenchmark",
+      "program": "${workspaceFolder:swift-dependencies-extras}/.build/release/DependenciesExtrasBenchmark",
+      "preLaunchTask": "swift: Build Release DependenciesExtrasBenchmark"
+    }
+  ]
+}
