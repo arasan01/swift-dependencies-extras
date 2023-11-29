@@ -34,8 +34,8 @@ final class DependenciesExtrasMacrosPluginTests: XCTestCase {
       }
       @DependencyClient
       public struct _$SimpleInterface {
-          var todo: @Sendable (_ id: Int) -> Int = { _ in
-              .previewValue(0)
+          public var execute: @Sendable () -> String = { _ in
+              unimplemented("execute")
           }
       }
 
@@ -85,8 +85,8 @@ final class DependenciesExtrasMacrosPluginTests: XCTestCase {
       }
       @DependencyClient
       public struct _$SimpleInterface {
-          var todo: @Sendable (_ id: Int) -> Int = { _ in
-              .previewValue(0)
+          public var execute: @Sendable () -> String = { _ in
+              unimplemented("execute")
           }
       }
 
@@ -115,10 +115,11 @@ final class DependenciesExtrasMacrosPluginTests: XCTestCase {
       @DependencyProtocolClient
       public protocol SimpleInterfaceProtocol {
           func foo()
+          func heh() -> String
           func gem(_ gotcha: Bool) -> Void
           func bar(arg: String)
           func haa(arg: Int) -> String
-          func good(a: Int, b: Int) -> Int
+          func good(_ a: Int, b: Int) -> Int
       }
 
       @DependencyImplementClient(of: SimpleInterfaceProtocol.self)
@@ -138,23 +139,25 @@ final class DependenciesExtrasMacrosPluginTests: XCTestCase {
       }
       public protocol SimpleInterfaceProtocol {
           func foo()
+          func heh() -> String
           func gem(_ gotcha: Bool) -> Void
           func bar(arg: String)
           func haa(arg: Int) -> String
-          func good(a: Int, b: Int) -> Int
+          func good(_ a: Int, b: Int) -> Int
       }
       @DependencyClient
       public struct _$SimpleInterface {
           public var foo: @Sendable () -> Void
-          public var gem: @Sendable () -> Void
-          public var bar: @Sendable () -> Void
-          public var haa: @Sendable () -> String = { _ in
-              .mock
+          public var heh: @Sendable () -> String = { () in
+              unimplemented("heh")
           }
-          public var good: @Sendable () -> Int = {
-              _
-              _ in
-              .mock
+          public var gem: @Sendable (_: Bool) -> Void
+          public var bar: @Sendable (_ arg: String) -> Void
+          public var haa: @Sendable (_ arg: Int) -> String = { (_) in
+              unimplemented("haa")
+          }
+          public var good: @Sendable (_: Int, _ b: Int) -> Int = { (_, _) in
+              unimplemented("good")
           }
       }
       public struct SimpleImpl: SimpleInterfaceProtocol {

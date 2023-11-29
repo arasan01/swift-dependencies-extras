@@ -52,11 +52,17 @@ where Input == FunctionDeclSyntax, Output == VariableDeclSyntax {
         : InitializerClauseSyntax(
           value: ClosureExprSyntax(
             signature: ClosureSignatureSyntax(
-              parameterClause: .init(
-                ClosureShorthandParameterListSyntax(
-                  parameters.map { _ in
-                    ClosureShorthandParameterSyntax(name: .identifier("_"))
-                  }
+              parameterClause: .parameterClause(
+                ClosureParameterClauseSyntax(
+                  parameters: ClosureParameterListSyntax(
+                    parameters.map { p in
+                      ClosureParameterSyntax(
+                        firstName: .identifier("_"),
+                        trailingComma: p != parameters.last
+                          ? .commaToken() : nil
+                      )
+                    }
+                  )
                 )
               )
             ),
@@ -64,10 +70,27 @@ where Input == FunctionDeclSyntax, Output == VariableDeclSyntax {
               CodeBlockItemSyntax(
                 item: .expr(
                   ExprSyntax(
-                    MemberAccessExprSyntax(
-                      declName: DeclReferenceExprSyntax(
-                        baseName: .identifier("mock")
-                      )
+                    FunctionCallExprSyntax(
+                      calledExpression: DeclReferenceExprSyntax(
+                        baseName: .identifier("unimplemented")
+                      ),
+                      leftParen: .leftParenToken(),
+                      arguments: LabeledExprListSyntax([
+                        LabeledExprSyntax(
+                          expression: StringLiteralExprSyntax(
+                            openingQuote: .stringQuoteToken(),
+                            segments: StringLiteralSegmentListSyntax([
+                              .stringSegment(
+                                StringSegmentSyntax(
+                                  content: .stringSegment(name.text)
+                                )
+                              )
+                            ]),
+                            closingQuote: .stringQuoteToken()
+                          )
+                        )
+                      ]),
+                      rightParen: .rightParenToken()
                     )
                   )
                 )
@@ -81,4 +104,19 @@ where Input == FunctionDeclSyntax, Output == VariableDeclSyntax {
 
 extension Converting
 where Input == FunctionParameterListSyntax, Output == TupleTypeElementListSyntax
-{ static let convert = Converting { parameters in return [] } }
+{
+  static let convert = Converting { parameters in
+    let elements: [TupleTypeElementSyntax] = parameters.map { fp in
+      let originalFirstName = fp.firstToken(viewMode: .sourceAccurate)
+      let secondName = originalFirstName.flatMap { $0.text != "_" ? $0 : nil }
+      return TupleTypeElementSyntax(
+        firstName: .wildcardToken(),
+        secondName: secondName,
+        colon: .colonToken(),
+        type: fp.type,
+        trailingComma: fp != parameters.last ? .commaToken() : nil
+      )
+    }
+    return TupleTypeElementListSyntax(elements)
+  }
+}
