@@ -4,8 +4,7 @@ import SwiftSyntaxBuilder
 import SwiftSyntaxMacroExpansion
 import SwiftSyntaxMacros
 
-public struct DependencyProtocolClientMacro {
-}
+public struct DependencyProtocolClientMacro {}
 
 extension DependencyProtocolClientMacro: PeerMacro {
   public static func expansion(
@@ -13,9 +12,7 @@ extension DependencyProtocolClientMacro: PeerMacro {
     providingPeersOf declaration: some DeclSyntaxProtocol,
     in context: some MacroExpansionContext
   ) throws -> [DeclSyntax] {
-    guard let protocolDecl = declaration.as(
-      ProtocolDeclSyntax.self
-    ) else {
+    guard let protocolDecl = declaration.as(ProtocolDeclSyntax.self) else {
       context.diagnose(
         .init(
           node: node,
@@ -29,37 +26,32 @@ extension DependencyProtocolClientMacro: PeerMacro {
       return []
     }
     guard
-      let declRawName = declaration.asProtocol(
-        NamedDeclSyntax.self
-      )?.name.text,
+      let declRawName = declaration.asProtocol(NamedDeclSyntax.self)?.name.text,
       !declRawName.isEmpty
-    else {
-      return []
-    }
-    
-    let generatedStructClientName = generatedStructName(
-      declRawName
-    )
-    
+    else { return [] }
+
+    let generatedStructClientName = generatedStructName(declRawName)
+
     let newMemberItemsBlock = try protocolDecl.memberBlock.members.map {
       if let funcDecl = $0.decl.as(FunctionDeclSyntax.self) {
         let newDecl: VariableDeclSyntax = try Converting.convert(funcDecl)
         return MemberBlockItemSyntax(decl: newDecl)
-      } else {
+      }
+      else {
         return $0
       }
     }
-    
+
     let variables = MemberBlockItemListSyntax(newMemberItemsBlock).formatted()
-    
+
     return [
-        """
-        @DependencyConformance
-        @DependencyClient
-        public struct \(raw: generatedStructClientName) {
-            \(variables)
-        }
-        """
+      """
+      @DependencyConformance
+      @DependencyClient
+      public struct \(raw: generatedStructClientName) {
+          \(variables)
+      }
+      """
     ]
   }
 }

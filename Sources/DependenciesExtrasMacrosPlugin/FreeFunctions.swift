@@ -1,5 +1,5 @@
-import SwiftSyntax
 import Foundation
+import SwiftSyntax
 
 func generatedStructName(_ raw: String) -> String {
   "_$\(raw.replacingOccurrences(of: "Protocol", with: ""))"
@@ -10,5 +10,6 @@ func variableName(_ raw: String) -> String {
 }
 
 func checkReturnClauseIsVoid(_ returnClause: ReturnClauseSyntax?) -> Bool {
-  returnClause == nil || returnClause?.type.as(IdentifierTypeSyntax.self)?.name.text == "Void"
+  returnClause == nil
+    || returnClause?.type.as(IdentifierTypeSyntax.self)?.name.text == "Void"
 }
