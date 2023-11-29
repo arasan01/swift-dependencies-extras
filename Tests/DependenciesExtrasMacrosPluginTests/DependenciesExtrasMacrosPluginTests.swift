@@ -38,7 +38,9 @@ final class DependenciesExtrasMacrosPluginTests: XCTestCase {
             }
             @DependencyClient
             public struct _$SimpleInterface {
-                var todo: @Sendable () -> Void
+                var todo: @Sendable (_ id: Int) -> Int = { _ in
+                    .previewValue(0)
+                }
             }
 
             public struct SimpleImpl: SimpleInterfaceProtocol {
@@ -77,9 +79,9 @@ final class DependenciesExtrasMacrosPluginTests: XCTestCase {
         } expansion: {
             """
             extension DependencyValues {
-                public var chan: _$SimpleInterfaceProtocol {
-                    get { self[_$SimpleInterfaceProtocol.self] }
-                    set { self[_$SimpleInterfaceProtocol.self] = newValue }
+                public var chan: _$SimpleInterface {
+                    get { self[_$SimpleInterface.self] }
+                    set { self[_$SimpleInterface.self] = newValue }
                 }
             }
             public protocol SimpleInterfaceProtocol {
@@ -87,7 +89,9 @@ final class DependenciesExtrasMacrosPluginTests: XCTestCase {
             }
             @DependencyClient
             public struct _$SimpleInterface {
-                var todo: @Sendable () -> Void
+                var todo: @Sendable (_ id: Int) -> Int = { _ in
+                    .previewValue(0)
+                }
             }
 
             public struct SimpleImpl: SimpleInterfaceProtocol {
@@ -137,12 +141,24 @@ final class DependenciesExtrasMacrosPluginTests: XCTestCase {
                 }
             }
             public protocol SimpleInterfaceProtocol {
-                func execute(arg: String) -> String
+                func foo()
+                func gem(_ gotcha: Bool) -> Void
+                func bar(arg: String)
+                func haa(arg: Int) -> String
+                func good(a: Int, b: Int) -> Int
             }
             @DependencyClient
             public struct _$SimpleInterface {
-                var todo: @Sendable (_ id: Int) -> Int = { _ in
-                    .previewValue(0)
+                public var foo: @Sendable () -> Void
+                public var gem: @Sendable () -> Void
+                public var bar: @Sendable () -> Void
+                public var haa: @Sendable () -> String = { _ in
+                    .mock
+                }
+                public var good: @Sendable () -> Int = {
+                    _
+                    _ in
+                    .mock
                 }
             }
             public struct SimpleImpl: SimpleInterfaceProtocol {

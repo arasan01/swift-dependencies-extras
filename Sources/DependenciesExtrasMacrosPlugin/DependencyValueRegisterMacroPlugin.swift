@@ -26,7 +26,7 @@ extension DependencyValueRegisterMacro: DeclarationMacro {
             return []
         }
         
-        let macroUnderType = "_$\(rawType.replacingOccurrences(of: "Protocol", with: ""))"
+        let macroUnderType = generatedStructName(rawType)
         
         return [
             """

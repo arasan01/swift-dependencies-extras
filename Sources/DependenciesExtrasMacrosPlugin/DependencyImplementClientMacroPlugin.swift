@@ -47,7 +47,7 @@ extension DependencyImplementClientMacro: ExtensionMacro {
         }
         
         
-        let generatedStructClientName = "_$\(rawType.replacingOccurrences(of: "Protocol", with: ""))"
+        let generatedStructClientName = generatedStructName(rawType)
         let liveImplementExtension = try ExtensionDeclSyntax(
             """
             extension \(raw: generatedStructClientName): DependencyKey {
