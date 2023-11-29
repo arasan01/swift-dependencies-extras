@@ -34,7 +34,7 @@ final class DependenciesExtrasMacrosPluginTests: XCTestCase {
       }
       @DependencyClient
       public struct _$SimpleInterface {
-          public var execute: @Sendable () -> String = { _ in
+          public var execute: @Sendable (_ arg: String) -> String = { (_) in
               unimplemented("execute")
           }
       }
@@ -85,7 +85,7 @@ final class DependenciesExtrasMacrosPluginTests: XCTestCase {
       }
       @DependencyClient
       public struct _$SimpleInterface {
-          public var execute: @Sendable () -> String = { _ in
+          public var execute: @Sendable (_ arg: String) -> String = { (_) in
               unimplemented("execute")
           }
       }
