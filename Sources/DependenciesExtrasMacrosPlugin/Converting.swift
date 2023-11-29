@@ -140,3 +140,39 @@ where Input == FunctionParameterListSyntax, Output == TupleTypeElementListSyntax
         return TupleTypeElementListSyntax(elements)
     }
 }
+
+extension Converting
+where Input == VariableDeclSyntax, Output == DeclReferenceExprSyntax {
+    static let convert = Converting { varDecl in
+        guard let patternBinding = varDecl.bindings.first else {
+            return DeclReferenceExprSyntax(baseName: .identifier("miss"))
+        }
+        let name = patternBinding.pattern.cast(IdentifierPatternSyntax.self)
+            .identifier
+        let labels: [DeclNameArgumentSyntax]? = patternBinding.typeAnnotation?
+            .type
+            .as(AttributedTypeSyntax.self)?
+            .baseType
+            .as(FunctionTypeSyntax.self)?
+            .parameters
+            .compactMap { tupleType in
+                if let secondName = tupleType.secondName {
+                    return DeclNameArgumentSyntax(name: secondName)
+                }
+                else {
+                    return DeclNameArgumentSyntax(name: .wildcardToken())
+                }
+            }
+        if let labels, !labels.isEmpty {
+            return DeclReferenceExprSyntax(
+                baseName: name,
+                argumentNames: DeclNameArgumentsSyntax(
+                    arguments: DeclNameArgumentListSyntax(labels)
+                )
+            )
+        }
+        else {
+            return DeclReferenceExprSyntax(baseName: name)
+        }
+    }
+}

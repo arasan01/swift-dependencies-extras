@@ -5,7 +5,7 @@ import XCTest
 final class DependenciesExtrasMacrosPluginTests: XCTestCase {
     override func invokeTest() {
         withMacroTesting(
-            isRecording: true,
+            // isRecording: true,
             macros: [
                 DependencyProtocolClientMacro.self,
                 DependencyTestDepConformanceMacro.self,
@@ -15,10 +15,10 @@ final class DependenciesExtrasMacrosPluginTests: XCTestCase {
         ) { super.invokeTest() }
     }
 
-    func xtestBasics() {
+    func testBasics() {
         assertMacro {
             """
-            @DependencyProtocolClient
+            @DependencyProtocolClient(implemented: SimpleImpl.self)
             public protocol SimpleInterfaceProtocol {
                 func execute(arg: String) -> String
             }
@@ -52,18 +52,28 @@ final class DependenciesExtrasMacrosPluginTests: XCTestCase {
                     _$SimpleInterfaceProtocol()
                 }
             }
+
+            extension _$SimpleInterfaceProtocol: DependencyKey {
+                public static var liveValue: _$SimpleInterfaceProtocol {
+                    _$SimpleInterfaceProtocol.from(SimpleImpl())
+                }
+
+                public static func from(_ native: SimpleImpl) -> _$SimpleInterfaceProtocol {
+                    _$SimpleInterfaceProtocol(execute: native.execute(arg:))
+                }
+            }
             """
         }
     }
 
-    func xtestRegister() {
+    func testRegister() {
         assertMacro {
             """
             extension DependencyValues {
                 #DependencyValueRegister(of: SimpleInterfaceProtocol.self, into: "chan")
             }
 
-            @DependencyProtocolClient
+            @DependencyProtocolClient(implemented: SimpleImpl.self)
             public protocol SimpleInterfaceProtocol {
                 func execute(arg: String) -> String
                 var body: some View { get }
@@ -105,6 +115,16 @@ final class DependenciesExtrasMacrosPluginTests: XCTestCase {
                     _$SimpleInterfaceProtocol()
                 }
             }
+
+            extension _$SimpleInterfaceProtocol: DependencyKey {
+                public static var liveValue: _$SimpleInterfaceProtocol {
+                    _$SimpleInterfaceProtocol.from(SimpleImpl())
+                }
+
+                public static func from(_ native: SimpleImpl) -> _$SimpleInterfaceProtocol {
+                    _$SimpleInterfaceProtocol(execute: native.execute(arg:))
+                }
+            }
             """
         }
     }
@@ -116,7 +136,7 @@ final class DependenciesExtrasMacrosPluginTests: XCTestCase {
                 #DependencyValueRegister(of: SimpleInterfaceProtocol.self, into: "chan")
             }
 
-            @DependencyProtocolClient
+            @DependencyProtocolClient(implemented: SimpleImpl.self)
             public protocol SimpleInterfaceProtocol {
                 func foo()
                 func heh() -> String
@@ -126,7 +146,6 @@ final class DependenciesExtrasMacrosPluginTests: XCTestCase {
                 func good(_ a: Int, b: Int) -> Int
             }
 
-            @DependencyLiveDepConformance(of: SimpleInterfaceProtocol.self)
             public struct SimpleImpl: SimpleInterfaceProtocol {
                 public func execute(arg: String) -> String {
                     return "simple"
@@ -164,6 +183,7 @@ final class DependenciesExtrasMacrosPluginTests: XCTestCase {
                     unimplemented("good")
                 }
             }
+
             public struct SimpleImpl: SimpleInterfaceProtocol {
                 public func execute(arg: String) -> String {
                     return "simple"
@@ -177,7 +197,13 @@ final class DependenciesExtrasMacrosPluginTests: XCTestCase {
             }
 
             extension _$SimpleInterfaceProtocol: DependencyKey {
-                fatalError("live value")
+                public static var liveValue: _$SimpleInterfaceProtocol {
+                    _$SimpleInterfaceProtocol.from(SimpleImpl())
+                }
+
+                public static func from(_ native: SimpleImpl) -> _$SimpleInterfaceProtocol {
+                    _$SimpleInterfaceProtocol(foo: native.foo, heh: native.heh, gem: native.gem(_:), bar: native.bar(arg:), haa: native.haa(arg:), good: native.good(_:b:))
+                }
             }
             """
         }

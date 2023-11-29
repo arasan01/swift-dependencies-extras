@@ -25,24 +25,46 @@ extension DependencyProtocolClientMacro: PeerMacro {
             )
             return []
         }
+
+        guard
+            let implementedType = extractSingleTypeArgumentTokenSyntax(
+                of: node,
+                in: context
+            )?
+            .text
+        else {
+            return []
+        }
+
         guard
             let declRawName = declaration.asProtocol(NamedDeclSyntax.self)?.name
                 .text, !declRawName.isEmpty
-        else { return [] }
+        else {
+            context.diagnose(
+                .init(
+                    node: node,
+                    message: MacroExpansionErrorMessage(
+                        """
+                        applying macro declaration name is invalid
+                        """
+                    )
+                )
+            )
+            return []
+        }
 
         let generatedStructClientName = generatedStructName(declRawName)
 
         let newMemberItemsBlock = try protocolDecl.memberBlock.members
             .compactMap {
-                if let funcDecl = $0.decl.as(FunctionDeclSyntax.self) {
-                    let newDecl: VariableDeclSyntax = try Converting.convert(
-                        funcDecl
-                    )
-                    return MemberBlockItemSyntax(decl: newDecl)
-                }
-                else {
-                    return nil
-                }
+                (decl: MemberBlockItemSyntax) -> MemberBlockItemSyntax? in
+                guard
+                    let funcDecl = decl.decl.as(FunctionDeclSyntax.self)
+                else { return nil }
+                let newDecl: VariableDeclSyntax = try Converting.convert(
+                    funcDecl
+                )
+                return MemberBlockItemSyntax(decl: newDecl)
             }
 
         let variables = MemberBlockItemListSyntax(newMemberItemsBlock)
@@ -51,6 +73,7 @@ extension DependencyProtocolClientMacro: PeerMacro {
         return [
             """
             @DependencyTestDepConformance
+            @DependencyLiveDepConformance(of: \(raw: implementedType).self)
             @DependencyClient
             public struct \(raw: generatedStructClientName) {
                 \(variables)
@@ -59,7 +82,3 @@ extension DependencyProtocolClientMacro: PeerMacro {
         ]
     }
 }
-
-//struct DeclElement {
-//    var
-//}

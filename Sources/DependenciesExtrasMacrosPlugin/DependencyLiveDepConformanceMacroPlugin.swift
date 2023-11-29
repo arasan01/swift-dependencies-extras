@@ -15,8 +15,7 @@ extension DependencyLiveDepConformanceMacro: ExtensionMacro {
         in context: some MacroExpansionContext
     ) throws -> [ExtensionDeclSyntax] {
         guard
-            declaration.is(StructDeclSyntax.self)
-                || declaration.is(ClassDeclSyntax.self)
+            let structDecl = declaration.as(StructDeclSyntax.self)
         else {
             context.diagnose(
                 .init(
@@ -31,33 +30,77 @@ extension DependencyLiveDepConformanceMacro: ExtensionMacro {
             return []
         }
 
-        guard case .argumentList(let arguments) = node.arguments,
-            arguments.count == 1,
-            let argumentFirstMemberAccessExn = arguments.first?.expression
-                .as(MemberAccessExprSyntax.self),
-            let rawType = argumentFirstMemberAccessExn.base?
-                .as(DeclReferenceExprSyntax.self)?
-                .baseName.text
-        else { return [] }
+        guard
+            let declRawName = declaration.asProtocol(NamedDeclSyntax.self)?.name
+                .text, !declRawName.isEmpty
+        else {
+            context.diagnose(
+                .init(
+                    node: node,
+                    message: MacroExpansionErrorMessage(
+                        """
+                        declaration name invalid
+                        """
+                    )
+                )
+            )
+            return []
+        }
 
         guard
-            declaration.inheritanceClause?.inheritedTypes
-                .contains(where: {
-                    $0.type.as(IdentifierTypeSyntax.self)?.name.text == rawType
-                }) ?? false
-        else { return [] }
+            let rawType = extractSingleTypeArgumentTokenSyntax(
+                of: node,
+                in: context
+            )?
+            .text
+        else {
+            return []
+        }
 
-        let generatedStructClientName = generatedStructName(rawType)
+        let memberAccessDeclReferenceExprs: [DeclReferenceExprSyntax] =
+            try structDecl.memberBlock.members.compactMap {
+                (decl: MemberBlockItemSyntax) -> DeclReferenceExprSyntax? in
+                guard
+                    let varDecl = decl.decl.as(VariableDeclSyntax.self)
+                else { return nil }
+                return try Converting.convert(varDecl)
+            }
+        let labeledExprs: [LabeledExprSyntax] =
+            memberAccessDeclReferenceExprs.compactMap { refDecl in
+                let labelName = refDecl.baseName
+                return LabeledExprSyntax(
+                    label: labelName,
+                    colon: .colonToken(),
+                    expression: MemberAccessExprSyntax(
+                        base: DeclReferenceExprSyntax(
+                            baseName: .identifier("native")
+                        ),
+                        period: .periodToken(),
+                        declName: refDecl
+                    ),
+                    trailingComma: refDecl
+                        != memberAccessDeclReferenceExprs.last
+                        ? .commaToken() : nil
+                )
+            }
+        let labeledListExpr = LabeledExprListSyntax(labeledExprs)
+            .formatted()
+
         let liveImplementExtension = try ExtensionDeclSyntax(
             """
-            extension \(raw: generatedStructClientName): DependencyKey {
-                public static var liveValue: \(raw: generatedStructClientName) {
-                    fatalError("live value")
-                    return \(raw: generatedStructClientName)()
+            extension \(raw: declRawName): DependencyKey {
+                public static var liveValue: \(raw: declRawName) {
+                    \(raw: declRawName).from(\(raw: rawType)())
+                }
+
+                public static func from(_ native: \(raw: rawType)) -> \(raw: declRawName) {
+                    \(raw: declRawName)(\(labeledListExpr))
                 }
             }
             """
         )
+        .formatted()
+        .cast(ExtensionDeclSyntax.self)
         return [liveImplementExtension]
     }
 }

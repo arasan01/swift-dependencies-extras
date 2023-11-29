@@ -30,7 +30,19 @@ extension DependencyTestDepConformanceMacro: ExtensionMacro {
         guard
             let declRawName = declaration.asProtocol(NamedDeclSyntax.self)?.name
                 .text, !declRawName.isEmpty
-        else { return [] }
+        else {
+            context.diagnose(
+                .init(
+                    node: node,
+                    message: MacroExpansionErrorMessage(
+                        """
+                        declaration name invalid
+                        """
+                    )
+                )
+            )
+            return []
+        }
 
         let dependencyExtension = try ExtensionDeclSyntax(
             """

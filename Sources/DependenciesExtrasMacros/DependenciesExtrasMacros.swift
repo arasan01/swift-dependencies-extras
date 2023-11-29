@@ -14,7 +14,12 @@ public macro DependencyTestDepConformance() =
         type: "DependencyTestDepConformanceMacro"
     )
 
-@attached(extension, conformances: DependencyKey, names: named(liveValue))
+@attached(
+    extension,
+    conformances: DependencyKey,
+    names: named(liveValue),
+    named(from)
+)
 public macro DependencyLiveDepConformance<T>(of: T.Type) =
     #externalMacro(
         module: "DependenciesExtrasMacrosPlugin",
