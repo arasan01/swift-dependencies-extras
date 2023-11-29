@@ -2,11 +2,11 @@
   "version": 1,
   "lineLength": 80,
   "indentation": {
-    "spaces": 2
+    "spaces": 4
   },
-  "tabWidth": 2,
+  "tabWidth": 4,
   "maximumBlankLines": 1,
-  "respectsExistingLineBreaks": false,
+  "respectsExistingLineBreaks": true,
   "lineBreakBeforeControlFlowKeywords": true,
   "lineBreakBeforeEachArgument": true,
   "lineBreakBeforeEachGenericRequirement": true,
