@@ -131,90 +131,91 @@ final class DependenciesExtrasMacrosPluginTests: XCTestCase {
 
   func testImplement() {
     assertMacro {
-      """
-      extension DependencyValues {
-          #DependencyValueRegister(of: SimpleInterfaceProtocol.self, into: "chan")
-      }
-
-      @DependencyProtocolClient(implemented: SimpleImpl.self)
-      public protocol SimpleInterfaceProtocol {
-          func foo()
-          func heh() -> String
-          func gem(_ gotcha: Bool) async -> Void
-          func bar(arg: String) async throws
-          func haa(arg: inout Int) -> String
-          func good(_ a: Int, b: Int) -> Int
-      }
-
-      public struct SimpleImpl: SimpleInterfaceProtocol {
-          public func execute(arg: String) -> String {
-              return "simple"
-          }
-      }
-      """
+        """
+        extension DependencyValues {
+            #DependencyValueRegister(of: GreatTool.self, into: "great")
+        }
+        
+        @DependencyProtocolClient(implemented: Implements.self)
+        public protocol GreatTool {
+            func foo(a: Int) async -> Int
+            func hoge(_ b: Double) async throws -> Double
+            func yes(_ what: inout String) async -> Bool
+        }
+        
+        public actor Implements: GreatTool {
+            var x = 1
+            var y = 2.0
+            public func yes(_ what: inout String) -> Bool { true }
+            public func foo(a: Int) -> Int {
+                x += 1
+                return x
+            }
+            public func hoge(_ b: Double) throws -> Double {
+                y += 1
+                return y
+            }
+        }
+        """
     } expansion: {
       """
       extension DependencyValues {
-          public var chan: _$SimpleInterfaceProtocol {
-              get { self[_$SimpleInterfaceProtocol.self] }
-              set { self[_$SimpleInterfaceProtocol.self] = newValue }
+          public var great: _$GreatTool {
+              get { self[_$GreatTool.self] }
+              set { self[_$GreatTool.self] = newValue }
           }
       }
-      public protocol SimpleInterfaceProtocol {
-          func foo()
-          func heh() -> String
-          func gem(_ gotcha: Bool) async -> Void
-          func bar(arg: String) async throws
-          func haa(arg: inout Int) -> String
-          func good(_ a: Int, b: Int) -> Int
+      public protocol GreatTool {
+          func foo(a: Int) async -> Int
+          func hoge(_ b: Double) async throws -> Double
+          func yes(_ what: inout String) async -> Bool
       }
       @DependencyClient
-      public struct _$SimpleInterfaceProtocol: Sendable {
-          public var foo: @Sendable () -> Void
-          public var heh: @Sendable () -> String = { () in
-              unimplemented("heh")
+      public struct _$GreatTool: Sendable {
+          public var foo: @Sendable (_ a: Int) async -> Int = { (_) in
+              unimplemented("foo")
           }
-          public var gem: @Sendable (_: Bool) async -> Void
-          public var bar: @Sendable (_ arg: String) async throws -> Void
-          public var haa: @Sendable (_ arg: inout Int) -> String = { (_) in
-              unimplemented("haa")
+          public var hoge: @Sendable (_: Double) async throws -> Double = { (_) in
+              unimplemented("hoge")
           }
-          public var good: @Sendable (_: Int, _ b: Int) -> Int = { (_, _) in
-              unimplemented("good")
+          public var yes: @Sendable (_: inout String) async -> Bool = { (_) in
+              unimplemented("yes")
           }
       }
 
-      public struct SimpleImpl: SimpleInterfaceProtocol {
-          public func execute(arg: String) -> String {
-              return "simple"
+      public actor Implements: GreatTool {
+          var x = 1
+          var y = 2.0
+          public func yes(_ what: inout String) -> Bool { true }
+          public func foo(a: Int) -> Int {
+              x += 1
+              return x
+          }
+          public func hoge(_ b: Double) throws -> Double {
+              y += 1
+              return y
           }
       }
 
-      extension _$SimpleInterfaceProtocol: TestDependencyKey {
-          public static var testValue: _$SimpleInterfaceProtocol {
-              _$SimpleInterfaceProtocol()
+      extension _$GreatTool: TestDependencyKey {
+          public static var testValue: _$GreatTool {
+              _$GreatTool()
           }
       }
 
-      extension _$SimpleInterfaceProtocol: DependencyKey {
-          public static var liveValue: _$SimpleInterfaceProtocol {
-              let underLive = SimpleImpl()
-              _$SimpleInterfaceProtocol.from(underLive)
+      extension _$GreatTool: DependencyKey {
+          public static var liveValue: _$GreatTool {
+              let underLive = Implements()
+              return _$GreatTool.from(underLive)
           }
 
-          public static func from(_ native: SimpleImpl) -> _$SimpleInterfaceProtocol {
-              _$SimpleInterfaceProtocol(foo: {
-          native.foo()
-                  }, heh: {
-          native.heh()
-                  }, gem: {
-          await native.gem(_: $0)
-                  }, bar: {
-          try await native.bar(arg: $0)
-                  }, haa: {
-          native.haa(arg: $0)
-                  }, good: {
-          native.good(_: $0 b: $1)
+          public static func from(_ native: Implements) -> _$GreatTool {
+              _$GreatTool(foo: {
+          await native.foo(a: $0)
+                  }, hoge: {
+          try await native.hoge($0)
+                  }, yes: {
+          await native.yes(&$0)
                   })
           }
       }

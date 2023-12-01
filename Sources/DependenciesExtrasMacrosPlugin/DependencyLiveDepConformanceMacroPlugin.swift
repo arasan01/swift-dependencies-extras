@@ -66,9 +66,7 @@ extension DependencyLiveDepConformanceMacro: ExtensionMacro {
             .as(IdentifierPatternSyntax.self)?
             .identifier
         else { return nil }
-        let functionCallExpr: ExprSyntax = try Converting.convert<
-          (TokenSyntax, VariableDeclSyntax), ExprSyntax
-        >(
+        let functionCallExpr: ExprSyntax = try Converting.functionCallConvert(
           (TokenSyntax.identifier("native"), varDecl)
         )
         return (baseNameToken, functionCallExpr)
@@ -101,7 +99,7 @@ extension DependencyLiveDepConformanceMacro: ExtensionMacro {
       extension \(raw: declRawName): DependencyKey {
           public static var liveValue: \(raw: declRawName) {
               let underLive = \(raw: rawType)()
-              \(raw: declRawName).from(underLive)
+              return \(raw: declRawName).from(underLive)
           }
 
           public static func from(_ native: \(raw: rawType)) -> \(raw: declRawName) {

@@ -1,5 +1,9 @@
 import Foundation
+import SwiftCompilerPlugin
 import SwiftSyntax
+import SwiftSyntaxBuilder
+import SwiftSyntaxMacroExpansion
+import SwiftSyntaxMacros
 
 struct Converting<Input, Output> {
   var run: (Input) throws -> Output
@@ -148,33 +152,52 @@ where Input == FunctionParameterListSyntax, Output == TupleTypeElementListSyntax
 
 extension Converting
 where Input == (TokenSyntax, VariableDeclSyntax), Output == ExprSyntax {
-  static let convert = Converting { (callMember, varDecl) in
-    guard let patternBinding = varDecl.bindings.first else {
+  static let functionCallConvert = Converting { (callMember, varDecl) in
+    guard let patternBinding: PatternBindingSyntax = varDecl.bindings.first
+    else {
       return .init(DeclReferenceExprSyntax(baseName: .identifier("miss")))
     }
     let name = patternBinding.pattern.cast(IdentifierPatternSyntax.self)
       .identifier
-    let labels: [DeclNameArgumentSyntax]? = patternBinding.typeAnnotation?
-      .type
-      .as(AttributedTypeSyntax.self)?
-      .baseType
-      .as(FunctionTypeSyntax.self)?
-      .parameters
-      .compactMap { tupleType in
+
+    let effectSpecifier = try Converting<
+      VariableDeclSyntax, TypeEffectSpecifiersSyntax?
+    >
+    .convert(varDecl)
+
+    let parameters = try Converting<
+      PatternBindingSyntax, TupleTypeElementListSyntax?
+    >
+    .convert(
+      patternBinding
+    )
+
+    let labelsAndInoutKeywords: [(DeclNameArgumentSyntax?, TokenSyntax?)]? =
+      parameters?
+      .map { tupleType in
+        let inoutKeyword = tupleType.type.as(AttributedTypeSyntax.self)?
+          .specifier
         if let secondName = tupleType.secondName {
-          return DeclNameArgumentSyntax(name: secondName)
+          return (DeclNameArgumentSyntax(name: secondName), inoutKeyword)
         }
         else {
-          return DeclNameArgumentSyntax(name: .wildcardToken())
+          return (nil, inoutKeyword)
         }
       }
-    let effectSpecifier: TypeEffectSpecifiersSyntax? = varDecl.bindings
-      .compactMap(\.typeAnnotation?.type)
-      .compactMap { $0.as(AttributedTypeSyntax.self) }
-      .compactMap { $0.baseType.as(FunctionTypeSyntax.self) }
-      .compactMap(\.effectSpecifiers)
-      .compactMap { $0.as(TypeEffectSpecifiersSyntax.self) }
-      .first
+
+    func makeAmpersandDollarLabelExpr(
+      idx: Int,
+      isInout: Bool
+    ) -> any ExprSyntaxProtocol {
+      let expr = DeclReferenceExprSyntax(baseName: .dollarIdentifier("$\(idx)"))
+      if isInout {
+        return InOutExprSyntax(expression: expr)
+      }
+      else {
+        return expr
+      }
+    }
+
     var returnExpr: any ExprSyntaxProtocol = FunctionCallExprSyntax(
       calledExpression: MemberAccessExprSyntax(
         base: DeclReferenceExprSyntax(
@@ -187,14 +210,18 @@ where Input == (TokenSyntax, VariableDeclSyntax), Output == ExprSyntax {
       ),
       leftParen: .leftParenToken(),
       arguments: LabeledExprListSyntax(
-        labels?.enumerated()
-          .map { (idx, label) in
+        labelsAndInoutKeywords?.enumerated()
+          .map { (idx: Int, args) in
+            let (label, keyword) = args
             return LabeledExprSyntax(
-              label: label.name,
-              colon: .colonToken(),
-              expression: DeclReferenceExprSyntax(
-                baseName: .dollarIdentifier("$\(idx)")
-              )
+              label: label?.name,
+              colon: label != nil ? .colonToken() : nil,
+              expression: makeAmpersandDollarLabelExpr(
+                idx: idx,
+                isInout: keyword?.text == "inout"
+              ),
+              trailingComma: idx != (labelsAndInoutKeywords!.count - 1)
+                ? .commaToken() : nil
             )
           } ?? []
       ),
@@ -214,5 +241,28 @@ where Input == (TokenSyntax, VariableDeclSyntax), Output == ExprSyntax {
     }
 
     return .init(returnExpr)
+  }
+}
+
+extension Converting
+where Input == VariableDeclSyntax, Output == TypeEffectSpecifiersSyntax? {
+  static let convert = Converting { decl in
+    decl.bindings
+      .compactMap(\.typeAnnotation?.type)
+      .compactMap { $0.as(AttributedTypeSyntax.self) }
+      .compactMap { $0.baseType.as(FunctionTypeSyntax.self) }
+      .compactMap(\.effectSpecifiers)
+      .compactMap { $0.as(TypeEffectSpecifiersSyntax.self) }
+      .first
+  }
+}
+
+extension Converting
+where Input == PatternBindingSyntax, Output == TupleTypeElementListSyntax? {
+  static let convert = Converting { binding in
+    binding.typeAnnotation?
+      .type.as(AttributedTypeSyntax.self)?
+      .baseType.as(FunctionTypeSyntax.self)?
+      .parameters
   }
 }
