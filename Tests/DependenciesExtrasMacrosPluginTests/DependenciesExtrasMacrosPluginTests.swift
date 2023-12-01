@@ -131,32 +131,32 @@ final class DependenciesExtrasMacrosPluginTests: XCTestCase {
 
   func testImplement() {
     assertMacro {
-        """
-        extension DependencyValues {
-            #DependencyValueRegister(of: GreatTool.self, into: "great")
-        }
-        
-        @DependencyProtocolClient(implemented: Implements.self)
-        public protocol GreatTool {
-            func foo(a: Int) async -> Int
-            func hoge(_ b: Double) async throws -> Double
-            func yes(_ what: inout String) async -> Bool
-        }
-        
-        public actor Implements: GreatTool {
-            var x = 1
-            var y = 2.0
-            public func yes(_ what: inout String) -> Bool { true }
-            public func foo(a: Int) -> Int {
-                x += 1
-                return x
-            }
-            public func hoge(_ b: Double) throws -> Double {
-                y += 1
-                return y
-            }
-        }
-        """
+      """
+      extension DependencyValues {
+          #DependencyValueRegister(of: GreatTool.self, into: "great")
+      }
+
+      @DependencyProtocolClient(implemented: Implements.self)
+      public protocol GreatTool {
+          func foo(a: Int) async -> Int
+          func hoge(_ b: Double) async throws -> Double
+          func yes(_ what: inout String) async -> Bool
+      }
+
+      public actor Implements: GreatTool {
+          var x = 1
+          var y = 2.0
+          public func yes(_ what: inout String) -> Bool { true }
+          public func foo(a: Int) -> Int {
+              x += 1
+              return x
+          }
+          public func hoge(_ b: Double) throws -> Double {
+              y += 1
+              return y
+          }
+      }
+      """
     } expansion: {
       """
       extension DependencyValues {

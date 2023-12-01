@@ -14,6 +14,7 @@ extension DependencyLiveDepConformanceMacro: ExtensionMacro {
     conformingTo protocols: [TypeSyntax],
     in context: some MacroExpansionContext
   ) throws -> [ExtensionDeclSyntax] {
+    debugPrint(declaration)
     guard
       let structDecl = declaration.as(StructDeclSyntax.self)
     else {
@@ -22,7 +23,7 @@ extension DependencyLiveDepConformanceMacro: ExtensionMacro {
           node: node,
           message: MacroExpansionErrorMessage(
             """
-            Struct or Class declaration required, not supported other.
+            Struct declaration required, not supported other.
             """
           )
         )
@@ -67,7 +68,7 @@ extension DependencyLiveDepConformanceMacro: ExtensionMacro {
             .identifier
         else { return nil }
         let functionCallExpr: ExprSyntax = try Converting.functionCallConvert(
-          (TokenSyntax.identifier("native"), varDecl)
+          (TokenSyntax.identifier("live"), varDecl)
         )
         return (baseNameToken, functionCallExpr)
       }
@@ -102,7 +103,7 @@ extension DependencyLiveDepConformanceMacro: ExtensionMacro {
               return \(raw: declRawName).from(underLive)
           }
 
-          public static func from(_ native: \(raw: rawType)) -> \(raw: declRawName) {
+          public static func from(_ live: \(raw: rawType)) -> \(raw: declRawName) {
               \(raw: declRawName)(\(labeledListExpr))
           }
       }
