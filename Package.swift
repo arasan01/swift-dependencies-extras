@@ -20,7 +20,9 @@ let package = Package(
       name: "DependenciesExtrasBenchmark",
       dependencies: [
         "DependenciesExtrasMacros", .product(name: "Benchmark", package: "swift-benchmark"),
-      ]),
+      ],
+      swiftSettings: [.enableExperimentalFeature("StrictConcurrency")]
+    ),
     .target(
       name: "DependenciesExtrasMacros",
       dependencies: [

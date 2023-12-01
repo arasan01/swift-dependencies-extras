@@ -2,9 +2,9 @@
   "version": 1,
   "lineLength": 80,
   "indentation": {
-    "spaces": 4
+    "spaces": 2
   },
-  "tabWidth": 4,
+  "tabWidth": 2,
   "maximumBlankLines": 1,
   "respectsExistingLineBreaks": true,
   "lineBreakBeforeControlFlowKeywords": true,
