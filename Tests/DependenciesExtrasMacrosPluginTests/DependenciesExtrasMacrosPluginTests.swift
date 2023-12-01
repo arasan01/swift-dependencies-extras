@@ -5,7 +5,7 @@ import XCTest
 final class DependenciesExtrasMacrosPluginTests: XCTestCase {
   override func invokeTest() {
     withMacroTesting(
-      isRecording: true,
+      // isRecording: true,
       macros: [
         DependencyProtocolClientMacro.self,
         DependencyTestDepConformanceMacro.self,
@@ -35,7 +35,7 @@ final class DependenciesExtrasMacrosPluginTests: XCTestCase {
           func execute(arg: String) -> String
       }
       @DependencyClient
-      public struct _$SimpleInterfaceProtocol {
+      public struct _$SimpleInterfaceProtocol: Sendable {
           public var execute: @Sendable (_ arg: String) -> String = { (_) in
               unimplemented("execute")
           }
@@ -55,11 +55,14 @@ final class DependenciesExtrasMacrosPluginTests: XCTestCase {
 
       extension _$SimpleInterfaceProtocol: DependencyKey {
           public static var liveValue: _$SimpleInterfaceProtocol {
-              _$SimpleInterfaceProtocol.from(SimpleImpl())
+              let underLive = SimpleImpl()
+              return _$SimpleInterfaceProtocol.from(underLive)
           }
 
-          public static func from(_ native: SimpleImpl) -> _$SimpleInterfaceProtocol {
-              _$SimpleInterfaceProtocol(execute: native.execute(arg:))
+          public static func from(_ live: SimpleImpl) -> _$SimpleInterfaceProtocol {
+              _$SimpleInterfaceProtocol(execute: {
+          live.execute(arg: $0)
+                  })
           }
       }
       """
@@ -98,7 +101,7 @@ final class DependenciesExtrasMacrosPluginTests: XCTestCase {
           var body: some View { get }
       }
       @DependencyClient
-      public struct _$SimpleInterfaceProtocol {
+      public struct _$SimpleInterfaceProtocol: Sendable {
           public var execute: @Sendable (_ arg: String) -> String = { (_) in
               unimplemented("execute")
           }
@@ -118,11 +121,14 @@ final class DependenciesExtrasMacrosPluginTests: XCTestCase {
 
       extension _$SimpleInterfaceProtocol: DependencyKey {
           public static var liveValue: _$SimpleInterfaceProtocol {
-              _$SimpleInterfaceProtocol.from(SimpleImpl())
+              let underLive = SimpleImpl()
+              return _$SimpleInterfaceProtocol.from(underLive)
           }
 
-          public static func from(_ native: SimpleImpl) -> _$SimpleInterfaceProtocol {
-              _$SimpleInterfaceProtocol(execute: native.execute(arg:))
+          public static func from(_ live: SimpleImpl) -> _$SimpleInterfaceProtocol {
+              _$SimpleInterfaceProtocol(execute: {
+          live.execute(arg: $0)
+                  })
           }
       }
       """
@@ -209,13 +215,13 @@ final class DependenciesExtrasMacrosPluginTests: XCTestCase {
               return _$GreatTool.from(underLive)
           }
 
-          public static func from(_ native: Implements) -> _$GreatTool {
+          public static func from(_ live: Implements) -> _$GreatTool {
               _$GreatTool(foo: {
-          await native.foo(a: $0)
+          await live.foo(a: $0)
                   }, hoge: {
-          try await native.hoge($0)
+          try await live.hoge($0)
                   }, yes: {
-          await native.yes(&$0)
+          await live.yes(&$0)
                   })
           }
       }

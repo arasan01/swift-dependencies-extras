@@ -14,7 +14,6 @@ extension DependencyLiveDepConformanceMacro: ExtensionMacro {
     conformingTo protocols: [TypeSyntax],
     in context: some MacroExpansionContext
   ) throws -> [ExtensionDeclSyntax] {
-    debugPrint(declaration)
     guard
       let structDecl = declaration.as(StructDeclSyntax.self)
     else {
