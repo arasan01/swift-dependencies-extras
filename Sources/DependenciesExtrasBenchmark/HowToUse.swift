@@ -6,6 +6,8 @@ extension DependencyValues {
   #DependencyValueRegister(of: CGreatTool.self, into: "cgreat")
 }
 
+
+
 @DependencyProtocolClient(implemented: CImplements.self)
 public protocol CGreatTool {
   func foo(a: Int) -> Int
