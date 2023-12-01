@@ -32,24 +32,31 @@ extension DependencyValues {
 
 @DependencyProtocolClient(implemented: Implements.self)
 public protocol GreatTool {
-  func move() async
-  func play(name: String) async -> String
-  func stop(_ b: Double) async throws -> Double
-  func yes(_ what: inout String) async -> Bool
+    func move() async
+    func play(name: String) async -> String
+    func stop(_ b: Double) async throws -> Double
+    func yes(_ what: inout String) async -> Bool
 }
 
-public actor AImplements: AGreatTool {
-  var x = 1
-  var y = 1.0
-  public func yes(_ what: inout String) -> Bool { true }
-  public func foo(a: Int) -> Int {
-    x += 1
-    return x
-  }
-  public func hoge(_ b: Double) throws -> Double {
-    y += 1
-    return y
-  }
+public actor Implements: GreatTool {
+    var inState = 1
+    public func yes(_ what: inout String) async -> Bool {
+        what += "!"
+        return true
+    }
+    
+    public func move() async {
+        inState += 1
+        print("moving \(inState)")
+    }
+    
+    public func play(name: String) async -> String {
+        name + "playing"
+    }
+    
+    public func stop(_ b: Double) async throws -> Double {
+        return b
+    }
 }
 ```
 
