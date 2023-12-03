@@ -1,9 +1,9 @@
-# Dependencies Extras
+# Dependencies Protocol Extras
 
 [![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Farasan01%2Fswift-dependencies-extras%2Fbadge%3Ftype%3Dswift-versions)](https://swiftpackageindex.com/arasan01/swift-dependencies-extras)
 [![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Farasan01%2Fswift-dependencies-extras%2Fbadge%3Ftype%3Dplatforms)](https://swiftpackageindex.com/arasan01/swift-dependencies-extras)
 
-Libraries that make swift-dependencies even more useful
+Library to make swift-dependencies even more useful when using Protocol
 
 ## Table of Contents
 
