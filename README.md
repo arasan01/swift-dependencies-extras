@@ -3,20 +3,27 @@
 [![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Farasan01%2Fswift-dependencies-extras%2Fbadge%3Ftype%3Dswift-versions)](https://swiftpackageindex.com/arasan01/swift-dependencies-extras)
 [![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Farasan01%2Fswift-dependencies-extras%2Fbadge%3Ftype%3Dplatforms)](https://swiftpackageindex.com/arasan01/swift-dependencies-extras)
 
-Library to make swift-dependencies even more useful when using Protocol
+Library to make swift-dependencies even more useful when using Protocol.
 
 ## Table of Contents
 
-* [Overview](#overview)
-* [Quick start](#quick-start)
-* [Documentation](#documentation)
-* [Installation](#installation)
-* [Now on provide](#now-on-provide)
-* [License](#license)
+- [Dependencies Protocol Extras](#dependencies-protocol-extras)
+  - [Table of Contents](#table-of-contents)
+  - [Overview](#overview)
+  - [Quick start](#quick-start)
+  - [Documentation](#documentation)
+  - [Installation](#installation)
+  - [Now on provide.](#now-on-provide)
+    - [Dependencies Extras Macros](#dependencies-extras-macros)
+  - [License](#license)
 
 ## Overview
 
 Xcode's support for protocol-oriented declarations and implementations is very strong. However, as we understood in the Point-Free episode, we pay a price for this in exchange for some flexibility. So is there a way to move things forward while getting the benefits of both? Yes, that is macros! Macros allow us to automatically convert protocol-based to struct-based. This is an approach that works very well. By depositing the implementation in the macro, the protocol becomes an entity to be assisted by Xcode, and is internally converted into a function call of the implementation.
+
+This is a library that extends swift-dependencies, swift-dependencies is here.
+
+https://github.com/pointfreeco/swift-dependencies
 
 ## Quick start
 
@@ -44,16 +51,16 @@ public actor Implements: GreatTool {
         what += "!"
         return true
     }
-    
+
     public func move() async {
         inState += 1
         print("moving \(inState)")
     }
-    
+
     public func play(name: String) async -> String {
         name + "playing"
     }
-    
+
     public func stop(_ b: Double) async throws -> Double {
         return b
     }
