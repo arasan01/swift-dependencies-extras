@@ -33,51 +33,33 @@ Look at this first. Swift The power of Macro makes it possible to cut out and re
 import DependenciesExtrasMacros
 import Foundation
 
-struct Runner {
-  @Dependency(\.great) var great
+@DependencyProtocolClient(implemented: ProtocolPersistentImpl.self)
+protocol ProtocolPersistent: Sendable {
+    func load(_ url: URL) throws -> Data
+    func save(_ data: Data, _ url: URL) async throws -> Void
+}
 
-  func run() async throws {
-    do {
-      let new = withDependencies {
-        $0.great.move = { @Sendable _ in print("override moving") }
-      } operation: {
-        great
-      }
-      await new.move()
-    }
-  }
+public final class ProtocolPersistentImpl: @unchecked Sendable, ProtocolPersistent {
+    func load(_ url: URL) throws -> Data { try Data(contentsOf: url) }
+    func save(_ data: Data, _ url: URL) async throws -> Void { try data.write(to: url) }
 }
 
 extension DependencyValues {
-  #DependencyValueRegister(of: GreatTool.self, into: "great")
+    #DependencyValueRegister(of: ProtocolPersistent.self, into: "protocolPersistent")
 }
 
-@DependencyProtocolClient(implemented: Implements.self)
-public protocol GreatTool {
-    func move() async
-    func play(name: String) async -> String
-    func stop(_ b: Double) async throws -> Double
-    func yes(_ what: inout String) async -> Bool
-}
-
-public actor Implements: GreatTool {
-    var inState = 1
-    public func yes(_ what: inout String) async -> Bool {
-        what += "!"
-        return true
-    }
-
-    public func move() async {
-        inState += 1
-        print("moving \(inState)")
-    }
-
-    public func play(name: String) async -> String {
-        name + "playing"
-    }
-
-    public func stop(_ b: Double) async throws -> Double {
-        return b
+struct Runner {
+    @Dependency(\.protocolPersistent) var protocolPersistent
+    
+    func run() async throws {
+        do {
+            let new = withDependencies {
+                $0.protocolPersistent.save = { data, url in debugPrint(data, url) }
+            } operation: {
+                protocolPersistent
+            }
+            try await new.save("struct".data(using: .utf8)!, URL.documentsDirectory.appendingPathComponent(UUID().uuidString, conformingTo: .text))
+        }
     }
 }
 ```
@@ -85,9 +67,10 @@ public actor Implements: GreatTool {
 The first step is to give the already existing protocol a macro that informs the world that this will be used for dependency resolution.
 
 ```diff
-+ @DependencyProtocolClient(implemented: Implements.self)
-  public protocol GreatTool {
-    ...
++ @DependencyProtocolClient(implemented: ProtocolPersistentImpl.self)
+  protocol ProtocolPersistent: Sendable {
+    func load(_ url: URL) throws -> Data
+    func save(_ data: Data, _ url: URL) async throws -> Void
   }
 ```
 
@@ -95,7 +78,7 @@ Next, register a structure in DependencyValues that conforms to the DependencyKe
 
 ```diff
 + extension DependencyValues {
-+   #DependencyValueRegister(of: GreatTool.self, into: "great")
++   #DependencyValueRegister(of: ProtocolPersistent.self, into: "protocolPersistent")
 + }
 ```
 
