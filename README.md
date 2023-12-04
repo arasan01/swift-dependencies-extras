@@ -33,6 +33,21 @@ Look at this first. Swift The power of Macro makes it possible to cut out and re
 import DependenciesExtrasMacros
 import Foundation
 
+struct Runner {
+  @Dependency(\.great) var great
+
+  func run() async throws {
+    do {
+      let new = withDependencies {
+        $0.great.move = { @Sendable _ in print("override moving") }
+      } operation: {
+        great
+      }
+      await new.move()
+    }
+  }
+}
+
 extension DependencyValues {
   #DependencyValueRegister(of: GreatTool.self, into: "great")
 }
