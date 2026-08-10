@@ -75,7 +75,7 @@ extension DependencyProtocolClientMacro: PeerMacro {
       @DependencyTestDepConformance
       @DependencyLiveDepConformance(of: \(raw: implementedType).self)
       @DependencyClient
-      public struct \(raw: generatedStructClientName): Sendable {
+      \(protocolDecl.modifiers)struct \(raw: generatedStructClientName): Sendable {
           \(variables)
       }
       """
